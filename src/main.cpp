@@ -27,7 +27,7 @@ BLEUUID serviceDataUUID = BLEUUID("00000d00-0000-1000-8000-00805f9b34fb");
 LGFX_ESP32C3_ST7789_SPI display(240, 240, DISP_SCL, DISP_SDA, DISP_RES, DISP_DC, DISP_CS, DISP_BLK, -1, -1);
 LGFX_Sprite canvas(&display);
 
-static const lgfx::U8g2font u8g2font1(u8g2_font_FreeSansBoldOblique92pt7b);
+static const lgfx::U8g2font u8g2font92(u8g2_font_FreeSansBoldOblique92pt7b);
 
 int scanTime = 5; //In seconds
 BLEScan* pBLEScan;
@@ -37,7 +37,6 @@ int humidity = -99;
 int battery = 0;
 
 void DrawParameter(int line, float val, int format, int warn_col);
-void RightAlignAdj(int val, int* x);
 
 class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
     void onResult(BLEAdvertisedDevice advertisedDevice) {
@@ -182,36 +181,29 @@ void loop()
 
 void DrawParameter(int line, float val, int format, int warn_col)
 {
+  String Str_set;
   char str[8];
-  int rx;
-  int adjval;
+  int num_size;   // 数字フォント基準幅（フォント毎に固定：調整不可）
+  int dot_size;   // 小数点フォント幅（フォント毎に固定：調整不可）
+  int x_adj;      // x軸右寄せ調整値（フォント毎に固定：調整不可）
 
-  dtostrf((int)(val * pow(10, format)) / (float)pow(10, format), 7, format, str);
-  adjval = ((int)(val * pow(10, format)) % 10);
+  int rx;         // 右寄せ位置
+  int line_space; // 行間隔
+  int y_offset;   // Y軸オフセット
+
+  if (format == 0) {
+    Str_set = String((int)val);
+  } else {
+    Str_set = String(val, format);
+  }
+  Str_set.toCharArray(str, sizeof(str));
 
   canvas.setTextColor(warn_col);
-	canvas.setFont(&u8g2font1);
+	canvas.setFont(&u8g2font92);
   canvas.setTextDatum( textdatum_t::top_left);
-  rx = 236 - canvas.textWidth(str);
-  RightAlignAdj(adjval, &rx);
-  canvas.drawString(str, rx, (line * 120) + 17);
-}
-
-// u8g2_font_FreeSansBoldOblique92pt7b前提の右揃え調整
-void RightAlignAdj(int val, int* x)
-{
-	int diff = 0;
-
-	if (val == 0) diff = -5;
-	if (val == 1) diff = -12;
-	if (val == 2) diff = -3;
-	if (val == 3) diff = -5;
-	if (val == 4) diff = -7;
-	if (val == 5) diff = -2;
-	if (val == 6) diff = -4;
-	if (val == 7) diff = +3;
-	if (val == 8) diff = -4;
-	if (val == 9) diff = -5;
-
-	*x += diff;
+  canvas.setFont(&u8g2font92); num_size = 65;  dot_size = 32;  x_adj = 17;
+  rx = 240;
+  line_space = 120;
+  y_offset = 16;
+  canvas.drawString(str, rx - (strlen(str) * num_size) - (format ? 0 : dot_size) + x_adj, (line * line_space) + y_offset);
 }
