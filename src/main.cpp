@@ -119,7 +119,7 @@ void setup()
 void loop()
 {
   char str[8];
-  int warn_col = TFT_WHITE; // 警告表示文字色
+  int warn_col; // 警告表示文字色
 
   BLEScanResults foundDevices = pBLEScan->start(scanTime, false);
   pBLEScan->clearResults();   // delete results fromBLEScan buffer to release memory
@@ -129,6 +129,7 @@ void loop()
   if (humidity != -99)
   {
     // 温度
+    warn_col = TFT_WHITE;
     if ((temperature < 18) || (temperature > 28))  warn_col = TFT_YELLOW;
     if ((temperature < 17) || (temperature > 29))  warn_col = TFT_RED;
     if (warn_col == TFT_RED)  canvas.fillRect(0, 0, 240, 120, TFT_WHITE);
@@ -136,6 +137,7 @@ void loop()
 
     // 湿度
     // 室内で快適に過ごせる湿度は夏場で45～60%、冬場は55～65%程度と言われている
+    warn_col = TFT_WHITE;
     if ((humidity < 45) || (humidity > 65))  warn_col = TFT_YELLOW;
     if ((humidity < 40) || (humidity > 70))  warn_col = TFT_RED;
     if (warn_col == TFT_RED)	canvas.fillRect(98, 120, 240, 240, TFT_WHITE);
